@@ -1,117 +1,27 @@
-// =====================================================
-// VKO Solution - Vue Router Configuration
-// =====================================================
+import { createRouter, createWebHashHistory } from 'vue-router'
+import { useAuth } from '@/stores/auth'
 
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
-    // Rotas públicas
-    {
-      path: '/',
-      name: 'Home',
-      component: () => import('@/pages/Landing.vue'),
-      meta: { requiresAuth: false }
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: () => import('@/pages/Login.vue'),
-      meta: { requiresAuth: false }
-    },
-    {
-      path: '/register',
-      name: 'Register',
-      component: () => import('@/pages/Register.vue'),
-      meta: { requiresAuth: false }
-    },
-    
-    // Rotas protegidas
-    {
-      path: '/app',
-      name: 'App',
-      component: () => import('@/pages/AppLayout.vue'),
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          redirect: '/app/assets'
-        },
-        {
-          path: 'assets',
-          name: 'AssetsList',
-          component: () => import('@/pages/AssetsList.vue'),
-          meta: { requiresAuth: true }
-        },
-        {
-          path: 'assets/:id',
-          name: 'AssetDetail',
-          component: () => import('@/pages/AssetDetail.vue'),
-          meta: { requiresAuth: true }
-        }
-      ]
-    },
-    
-    // Rota de fallback
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/'
-    }
-  ]
-})
-
-// Guard global de autenticação
-router.beforeEach(async (to, _from, next) => {
-  const authStore = useAuthStore()
-
-  // Se a rota não requer autenticação, permitir acesso
-  if (!to.meta.requiresAuth) {
-    next()
-    return
+const routes = [
+  { path: '/', component: () => import('@/pages/Landing.vue') },
+  { path: '/login', component: () => import('@/pages/Login.vue') },
+  { path: '/register', component: () => import('@/pages/Register.vue') },
+  { path: '/app', component: () => import('@/pages/AppLayout.vue'),
+    children: [
+      { path: '', name: 'dashboard', component: () => import('@/pages/Dashboard.vue') },
+      { path: 'reports', name: 'reports', component: () => import('@/pages/Reports.vue') },
+      { path: 'reports/new', name: 'reportNew', component: () => import('@/pages/ReportNew.vue') },
+      { path: 'admin/permissions', name: 'adminPermissions', component: () => import('@/pages/AdminPermissions.vue') },
+      { path: 'settings', name: 'settings', component: () => import('@/pages/Settings.vue') },
+    ]
   }
+]
 
-  // Se não está autenticado, redirecionar para login
-  if (!authStore.isAuthenticated) {
-    next({
-      name: 'Login',
-      query: { redirect: to.fullPath }
-    })
-    return
-  }
+const router = createRouter({ history: createWebHashHistory(), routes })
 
-  // Se está autenticado mas não tem perfil carregado, aguardar
-  if (!authStore.profile) {
-    try {
-      await authStore.fetchProfile()
-    } catch (error) {
-      console.error('Erro ao carregar perfil:', error)
-      next({ name: 'Login' })
-      return
-    }
-  }
-
-  // Verificações específicas de permissão por rota
-  if (to.name === 'AssetDetail' && to.params.id) {
-    try {
-      // Aqui poderíamos fazer uma verificação adicional se necessário
-      // Por enquanto, confiamos no RLS do Supabase
-      next()
-    } catch (error) {
-      console.error('Erro ao verificar permissão do ativo:', error)
-      next({ name: 'AssetsList' })
-      return
-    }
-  }
-
-  next()
-})
-
-// Guard após navegação (para logs e analytics)
-router.afterEach((to, from) => {
-  // Aqui podemos adicionar analytics, logs, etc.
-  console.log(`Navegação: ${String(from.name)} → ${String(to.name)}`)
+router.beforeEach(async (to) => {
+  const auth = useAuth()
+  if (!auth.session) await auth.init()
+  if (to.path.startsWith('/app') && !auth.session) return { path: '/login', query: { r: to.fullPath } }
 })
 
 export default router

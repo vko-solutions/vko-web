@@ -9,21 +9,13 @@
 -->
 
 <template>
-  <div id="app" class="min-h-screen bg-[#FFFFFF] font-sans">
+  <div id="app" class="min-h-screen bg-white font-sans">
     <router-view />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-
-const authStore = useAuthStore()
-
-onMounted(async () => {
-  // Inicializar autenticação
-  await authStore.initializeAuth()
-})
+// App component - sem lógica adicional necessária
 </script>
 
 <style>

@@ -1,131 +1,107 @@
-<!--
-  =====================================================
-  VKO Solution - App Layout
-  =====================================================
-  
-  Para ajustar cores/estilos, modifique as classes Tailwind abaixo:
-  - Fundo: bg-[#FFFFFF] (Branco Puro)
-  - Container: max-w-7xl (largura máxima)
-  - Espaçamento: px-4 sm:px-6 lg:px-8 (padding responsivo)
--->
-
 <template>
-  <div class="min-h-screen bg-[#FFFFFF]">
-    <!-- Header -->
-    <Header />
-    
-    <!-- Conteúdo principal -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Breadcrumb (opcional) -->
-      <nav v-if="showBreadcrumb" class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-4">
-          <li>
-            <router-link to="/app" class="text-[#6C737F] hover:text-[#2B4C7E] transition-colors duration-200">
-              <svg class="flex-shrink-0 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-              </svg>
-              <span class="sr-only">Home</span>
-            </router-link>
-          </li>
-          <li v-for="item in breadcrumbItems" :key="item.name">
-            <div class="flex items-center">
-              <svg class="flex-shrink-0 h-5 w-5 text-[#E8ECEF]" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-              </svg>
-              <router-link
-                v-if="item.href"
-                :to="item.href"
-                class="ml-4 text-sm font-medium text-[#6C737F] hover:text-[#2B4C7E] transition-colors duration-200"
-              >
-                {{ item.name }}
-              </router-link>
-              <span v-else class="ml-4 text-sm font-medium text-[#2B4C7E]">
-                {{ item.name }}
-              </span>
-            </div>
-          </li>
-        </ol>
-      </nav>
-      
-      <!-- Título da página -->
-      <div v-if="pageTitle" class="mb-8">
-        <h1 class="text-3xl font-bold text-[#2B4C7E]">{{ pageTitle }}</h1>
-        <p v-if="pageDescription" class="mt-2 text-[#6C737F]">{{ pageDescription }}</p>
-      </div>
-      
-      <!-- Conteúdo da página -->
-      <div class="space-y-6">
-        <router-view />
-      </div>
-    </main>
-    
-    <!-- Footer (opcional) -->
-    <footer class="bg-[#E8ECEF]/20 border-t border-[#E8ECEF] mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="text-center text-sm text-[#6C737F]">
-          <p>&copy; {{ currentYear }} VKO Solution. Todos os direitos reservados.</p>
+  <div class="min-h-screen bg-gray-50 flex">
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white border-r border-gray-200 flex flex-col">
+      <div class="flex h-16 items-center gap-2 border-b px-4">
+        <div class="h-8 w-8 bg-blue-800 rounded flex items-center justify-center">
+          <span class="text-white font-bold text-xs">VKO</span>
         </div>
+        <span class="font-semibold text-blue-800">VKO Solution</span>
+        <span class="ml-auto px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">RBAC</span>
       </div>
-    </footer>
+      <nav class="flex-1 p-3 space-y-1">
+        <router-link
+          to="/app"
+          class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-gray-100"
+        >
+          <span class="text-lg">📊</span>
+          <span class="truncate">Dashboard</span>
+        </router-link>
+        <router-link
+          to="/app/reports"
+          class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-gray-100"
+        >
+          <span class="text-lg">📋</span>
+          <span class="truncate">Relatórios</span>
+        </router-link>
+        <router-link
+          to="/app/admin/permissions"
+          class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-gray-100"
+        >
+          <span class="text-lg">🔒</span>
+          <span class="truncate">Permissões</span>
+        </router-link>
+        <router-link
+          to="/app/settings"
+          class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-gray-100"
+        >
+          <span class="text-lg">⚙️</span>
+          <span class="truncate">Configurações</span>
+        </router-link>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <div class="flex-1 flex flex-col">
+      <!-- Topbar -->
+      <header class="sticky top-0 z-30 border-b bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex h-16 items-center gap-2">
+            <div class="relative hidden md:flex w-full max-w-md ml-1 items-center">
+              <svg class="pointer-events-none absolute left-3 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <input
+                placeholder="Buscar…"
+                class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Campo de busca"
+              />
+            </div>
+            
+            <div class="ml-auto flex items-center gap-2">
+              <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                🔒 {{ auth.profile?.role || 'asset_governance' }}
+              </span>
+              <div class="h-8 w-8 bg-blue-800 rounded-full flex items-center justify-center">
+                <span class="text-white text-xs font-bold">
+                  {{ (auth.profile?.email || auth.session?.user?.email || 'VK').slice(0, 2).toUpperCase() }}
+                </span>
+              </div>
+              <button 
+                @click="handleSignOut"
+                class="p-2 rounded hover:bg-gray-100"
+                aria-label="Sair"
+              >
+                <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Área de conteúdo -->
+      <main class="flex-1 p-6">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import Header from '@/components/Header.vue'
+import { useAuth } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
-const route = useRoute()
+const auth = useAuth()
+const router = useRouter()
 
-const currentYear = computed(() => new Date().getFullYear())
-
-// Configuração do breadcrumb baseada na rota atual
-const showBreadcrumb = computed(() => {
-  return route.path !== '/app'
-})
-
-const breadcrumbItems = computed(() => {
-  const items = []
-  
-  if (route.path.startsWith('/app/assets')) {
-    items.push({
-      name: 'Ativos',
-      href: '/app/assets'
-    })
-    
-    if (route.params.id) {
-      items.push({
-        name: `Ativo ${route.params.id}`,
-        href: null
-      })
-    }
+const handleSignOut = async () => {
+  try {
+    await auth.signOut()
+    router.push('/login')
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error)
   }
-  
-  return items
-})
-
-// Título da página baseado na rota
-const pageTitle = computed(() => {
-  switch (route.name) {
-    case 'AssetsList':
-      return 'Ativos'
-    case 'AssetDetail':
-      return 'Detalhes do Ativo'
-    default:
-      return null
-  }
-})
-
-const pageDescription = computed(() => {
-  switch (route.name) {
-    case 'AssetsList':
-      return 'Gerencie e visualize todos os ativos disponíveis'
-    case 'AssetDetail':
-      return 'Visualize informações detalhadas sobre este ativo'
-    default:
-      return null
-  }
-})
+}
 </script>
-
-

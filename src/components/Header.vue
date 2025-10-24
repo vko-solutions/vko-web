@@ -29,12 +29,12 @@
           <!-- Informações do usuário -->
           <div class="hidden sm:flex items-center space-x-3">
             <div class="text-right">
-              <p class="text-sm font-medium text-[#2B4C7E]">{{ authStore.profile?.name || 'Usuário' }}</p>
-              <p class="text-xs text-[#6C737F] capitalize">{{ authStore.userRole }}</p>
+              <p class="text-sm font-medium text-[#2B4C7E]">{{ auth.profile?.name || 'Usuário' }}</p>
+              <p class="text-xs text-[#6C737F] capitalize">{{ auth.profile?.role }}</p>
             </div>
             <div class="w-8 h-8 bg-[#A7C7E7] rounded-full flex items-center justify-center">
               <span class="text-sm font-medium text-[#2B4C7E]">
-                {{ (authStore.profile?.name || 'U').charAt(0).toUpperCase() }}
+                {{ (auth.profile?.name || 'U').charAt(0).toUpperCase() }}
               </span>
             </div>
           </div>
@@ -90,10 +90,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuth } from '@/stores/auth'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const auth = useAuth()
 
 const showDropdown = ref(false)
 const dropdownRef = ref<HTMLElement>()
@@ -108,7 +108,7 @@ const closeDropdown = () => {
 
 const handleLogout = async () => {
   try {
-    await authStore.signOut()
+    await auth.signOut()
     router.push('/login')
   } catch (error) {
     console.error('Erro ao fazer logout:', error)

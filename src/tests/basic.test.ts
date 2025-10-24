@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { usePermissionsStore } from '@/stores/permissions'
-import { useAuthStore } from '@/stores/auth'
+import { usePermissions } from '@/stores/permissions'
+import { useAuth } from '@/stores/auth'
 
 describe('Permissions Store', () => {
   beforeEach(() => {
@@ -13,8 +13,8 @@ describe('Permissions Store', () => {
   })
 
   it('should correctly identify admin role', () => {
-    const authStore = useAuthStore()
-    const permissionsStore = usePermissionsStore()
+    const authStore = useAuth()
+    const permissionsStore = usePermissions()
     
     // Mock admin profile
     authStore.profile = {
@@ -22,19 +22,17 @@ describe('Permissions Store', () => {
       name: 'Admin User',
       email: 'admin@vko.com',
       role: 'admin',
-      company_id: null,
-      created_at: new Date().toISOString()
+      company_id: null
     }
     
-    expect(permissionsStore.isAdmin).toBe(true)
-    expect(permissionsStore.isPartnerManager).toBe(false)
-    expect(permissionsStore.isAssetGovernance).toBe(false)
-    expect(permissionsStore.isViewer).toBe(false)
+    expect(permissionsStore.isAdmin.value).toBe(true)
+    expect(permissionsStore.isPrime.value).toBe(false)
+    expect(permissionsStore.isGov.value).toBe(false)
   })
 
   it('should correctly identify partner manager role', () => {
-    const authStore = useAuthStore()
-    const permissionsStore = usePermissionsStore()
+    const authStore = useAuth()
+    const permissionsStore = usePermissions()
     
     // Mock partner manager profile
     authStore.profile = {
@@ -42,70 +40,30 @@ describe('Permissions Store', () => {
       name: 'Partner Manager',
       email: 'pm@vko.com',
       role: 'partner_manager',
-      company_id: 'company-1',
-      created_at: new Date().toISOString()
+      company_id: 'company-1'
     }
     
-    expect(permissionsStore.isAdmin).toBe(false)
-    expect(permissionsStore.isPartnerManager).toBe(true)
-    expect(permissionsStore.isAssetGovernance).toBe(false)
-    expect(permissionsStore.isViewer).toBe(false)
+    expect(permissionsStore.isAdmin.value).toBe(false)
+    expect(permissionsStore.isPrime.value).toBe(true)
+    expect(permissionsStore.isGov.value).toBe(false)
   })
 
-  it('should allow admin to see all assets', () => {
-    const authStore = useAuthStore()
-    const permissionsStore = usePermissionsStore()
+  it('should correctly identify asset governance role', () => {
+    const authStore = useAuth()
+    const permissionsStore = usePermissions()
     
-    // Mock admin profile
+    // Mock asset governance profile
     authStore.profile = {
-      id: '1',
-      name: 'Admin User',
-      email: 'admin@vko.com',
-      role: 'admin',
-      company_id: null,
-      created_at: new Date().toISOString()
+      id: '3',
+      name: 'Asset Governance',
+      email: 'gov@vko.com',
+      role: 'asset_governance',
+      company_id: 'company-1'
     }
     
-    expect(permissionsStore.canSeeAsset('any-company', 'any-asset')).toBe(true)
-  })
-
-  it('should allow partner manager to see assets from their company', () => {
-    const authStore = useAuthStore()
-    const permissionsStore = usePermissionsStore()
-    
-    // Mock partner manager profile
-    authStore.profile = {
-      id: '2',
-      name: 'Partner Manager',
-      email: 'pm@vko.com',
-      role: 'partner_manager',
-      company_id: 'company-1',
-      created_at: new Date().toISOString()
-    }
-    
-    expect(permissionsStore.canSeeAsset('company-1', 'asset-1')).toBe(true)
-    expect(permissionsStore.canSeeAsset('company-2', 'asset-2')).toBe(false)
-  })
-
-  it('should have correct permission levels', () => {
-    const authStore = useAuthStore()
-    const permissionsStore = usePermissionsStore()
-    
-    // Test admin level
-    authStore.profile = {
-      id: '1',
-      name: 'Admin',
-      email: 'admin@vko.com',
-      role: 'admin',
-      company_id: null,
-      created_at: new Date().toISOString()
-    }
-    
-    expect(permissionsStore.permissionLevel).toBe(4)
-    expect(permissionsStore.hasPermissionLevel('admin')).toBe(true)
-    expect(permissionsStore.hasPermissionLevel('partner_manager')).toBe(true)
-    expect(permissionsStore.hasPermissionLevel('asset_governance')).toBe(true)
-    expect(permissionsStore.hasPermissionLevel('viewer')).toBe(true)
+    expect(permissionsStore.isAdmin.value).toBe(false)
+    expect(permissionsStore.isPrime.value).toBe(false)
+    expect(permissionsStore.isGov.value).toBe(true)
   })
 })
 

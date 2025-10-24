@@ -7,12 +7,12 @@
   - Fundo: bg-[#FFFFFF] (Branco Puro)
   - Primária: bg-[#2B4C7E] (Azul Aço)
   - Secundária: bg-[#7AC29A] (Verde Sálvia)
-  - Erro: text-[#F87171] (Coral Suave)
-  - Neutros: text-[#6C737F] (Cinza Urbano), border-[#E8ECEF] (Cinza Névoa)
+  - Erro: text-red-600 (Coral Suave)
+  - Neutros: text-gray-600 (Cinza Urbano), border-gray-300 (Cinza Névoa)
 -->
 
 <template>
-  <div class="min-h-screen bg-[#FFFFFF] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <!-- Logo -->
       <div class="flex justify-center">
@@ -23,100 +23,126 @@
         </svg>
       </div>
       
-      <h2 class="mt-6 text-center text-3xl font-bold text-[#2B4C7E]">
+      <h2 class="mt-6 text-center text-3xl font-bold text-blue-800">
         Crie sua conta
       </h2>
-      <p class="mt-2 text-center text-sm text-[#6C737F]">
+      <p class="mt-2 text-center text-sm text-gray-600">
         Ou
-        <router-link to="/login" class="font-medium text-[#2B4C7E] hover:text-[#1e3556] transition-colors duration-200">
+        <router-link to="/login" class="font-medium text-blue-800 hover:text-blue-900 transition-colors duration-200">
           faça login na sua conta existente
         </router-link>
       </p>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow-sm sm:rounded-lg sm:px-10 border border-[#E8ECEF]">
+      <div class="bg-white py-8 px-4 shadow-sm sm:rounded-lg sm:px-10 border border-gray-200">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Nome -->
-          <UIInput
-            v-model="form.name"
-            type="text"
-            label="Nome completo"
-            placeholder="Seu nome completo"
-            :error="errors.name"
-            :disabled="authStore.loading"
-            required
-          />
-
-          <!-- Email -->
-          <UIInput
-            v-model="form.email"
-            type="email"
-            label="Email"
-            placeholder="seu@email.com"
-            :error="errors.email"
-            :disabled="authStore.loading"
-            required
-          />
-
-          <!-- Senha -->
-          <UIInput
-            v-model="form.password"
-            type="password"
-            label="Senha"
-            placeholder="••••••••"
-            help="Mínimo de 6 caracteres"
-            :error="errors.password"
-            :disabled="authStore.loading"
-            required
-          />
-
-          <!-- Confirmar senha -->
-          <UIInput
-            v-model="form.confirmPassword"
-            type="password"
-            label="Confirmar senha"
-            placeholder="••••••••"
-            :error="errors.confirmPassword"
-            :disabled="authStore.loading"
-            required
-          />
-
-          <!-- Termos e condições -->
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <input
-                id="terms"
-                v-model="form.acceptTerms"
-                type="checkbox"
-                class="h-4 w-4 text-[#2B4C7E] focus:ring-[#2B4C7E] border-[#E8ECEF] rounded"
-                required
-              />
-            </div>
-            <div class="ml-3 text-sm">
-              <label for="terms" class="text-[#6C737F]">
-                Eu aceito os
-                <a href="#" class="font-medium text-[#2B4C7E] hover:text-[#1e3556] transition-colors duration-200">
-                  termos de uso
-                </a>
-                e a
-                <a href="#" class="font-medium text-[#2B4C7E] hover:text-[#1e3556] transition-colors duration-200">
-                  política de privacidade
-                </a>
-              </label>
-            </div>
+          <div>
+            <label for="name" class="block text-sm font-medium text-blue-800 mb-2">
+              Nome completo
+            </label>
+            <input
+              v-model="form.name"
+              type="text"
+              id="name"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-blue-800 focus:border-blue-800 sm:text-sm"
+              placeholder="Seu nome completo"
+              :error="errors.name"
+              :disabled="loading"
+              required
+            />
+            <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
           </div>
 
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-blue-800 mb-2">
+              Email
+            </label>
+            <input
+              v-model="form.email"
+              type="email"
+              id="email"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-blue-800 focus:border-blue-800 sm:text-sm"
+              placeholder="seu@email.com"
+              :error="errors.email"
+              :disabled="loading"
+              required
+            />
+            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+          </div>
+
+          <!-- Senha -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-blue-800 mb-2">
+              Senha
+            </label>
+            <input
+              v-model="form.password"
+              type="password"
+              id="password"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-blue-800 focus:border-blue-800 sm:text-sm"
+              placeholder="••••••••"
+              help="Mínimo de 6 caracteres"
+              :error="errors.password"
+              :disabled="loading"
+              required
+            />
+            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
+          </div>
+
+          <!-- Confirmar Senha -->
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-blue-800 mb-2">
+              Confirmar senha
+            </label>
+            <input
+              v-model="form.confirmPassword"
+              type="password"
+              id="confirmPassword"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-blue-800 focus:border-blue-800 sm:text-sm"
+              placeholder="••••••••"
+              :error="errors.confirmPassword"
+              :disabled="loading"
+              required
+            />
+            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600">{{ errors.confirmPassword }}</p>
+          </div>
+
+          <!-- Termos de uso -->
+          <div class="flex items-center">
+            <input
+              v-model="form.acceptTerms"
+              type="checkbox"
+              id="accept-terms"
+              class="h-4 w-4 text-blue-800 focus:ring-[#2B4C7E] border-gray-300 rounded"
+              :disabled="loading"
+              required
+            />
+            <label for="accept-terms" class="ml-2 block text-sm text-gray-600">
+              Eu aceito os
+              <a href="#" class="font-medium text-blue-800 hover:text-[#1e3556] transition-colors duration-200">
+                termos de uso
+              </a>
+              e
+              <a href="#" class="font-medium text-blue-800 hover:text-[#1e3556] transition-colors duration-200">
+                política de privacidade
+              </a>
+            </label>
+          </div>
+          <p v-if="errors.terms" class="text-sm text-red-600">{{ errors.terms }}</p>
+
           <!-- Erro geral -->
-          <div v-if="authStore.error" class="rounded-md bg-[#F87171]/10 p-4">
+          <div v-if="error" class="rounded-md bg-[#F87171]/10 p-4">
             <div class="flex">
               <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-[#F87171]" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-[#F87171]">{{ authStore.error }}</p>
+                <p class="text-sm text-red-600">{{ error }}</p>
               </div>
             </div>
           </div>
@@ -136,33 +162,38 @@
           </div>
 
           <!-- Botão de cadastro -->
-          <UIButton
+          <button
             type="submit"
-            variant="secondary"
-            size="lg"
-            :loading="authStore.loading"
-            loading-text="Criando conta..."
-            full-width
+            :disabled="loading"
+            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#2B4C7E] hover:bg-[#1e3556] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2B4C7E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            Criar conta
-          </UIButton>
+            <span v-if="loading" class="absolute left-0 inset-y-0 flex items-center pl-3">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </span>
+            {{ loading ? 'Criando conta...' : 'Criar conta' }}
+          </button>
         </form>
 
         <!-- Informações adicionais -->
         <div class="mt-6">
           <div class="relative">
             <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-[#E8ECEF]" />
+              <div class="w-full border-t border-gray-300" />
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-[#6C737F]">Informações importantes</span>
+              <span class="px-2 bg-white text-gray-600">Informações importantes</span>
             </div>
           </div>
 
-          <div class="mt-6 text-sm text-[#6C737F] space-y-2">
-            <p>• Sua conta será criada com permissões de visualização</p>
-            <p>• Um administrador pode alterar suas permissões posteriormente</p>
-            <p>• Você receberá um email de confirmação</p>
+          <div class="mt-6 text-center">
+            <div class="text-sm text-gray-600 space-y-2">
+              <p>📧 Você receberá um email de confirmação</p>
+              <p>🔐 Sua conta será criada com permissões básicas</p>
+              <p>👤 Um administrador pode ajustar suas permissões</p>
+            </div>
           </div>
         </div>
       </div>
@@ -173,12 +204,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import UIInput from '@/components/UI/Input.vue'
-import UIButton from '@/components/UI/Button.vue'
+import { useAuth } from '@/stores/auth'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const auth = useAuth()
 
 const form = reactive({
   name: '',
@@ -190,14 +219,14 @@ const form = reactive({
 
 const errors = ref<Record<string, string>>({})
 const successMessage = ref('')
+const loading = ref(false)
+const error = ref('')
 
 const validateForm = () => {
   errors.value = {}
   
   if (!form.name.trim()) {
     errors.value.name = 'Nome é obrigatório'
-  } else if (form.name.trim().length < 2) {
-    errors.value.name = 'Nome deve ter pelo menos 2 caracteres'
   }
   
   if (!form.email) {
@@ -229,7 +258,11 @@ const handleSubmit = async () => {
   if (!validateForm()) return
   
   try {
-    await authStore.signUp(form.name.trim(), form.email, form.password)
+    loading.value = true
+    error.value = ''
+    successMessage.value = ''
+    
+    await auth.signUp(form.name.trim(), form.email, form.password)
     
     successMessage.value = 'Conta criada com sucesso! Verifique seu email para confirmar.'
     
@@ -241,16 +274,18 @@ const handleSubmit = async () => {
       confirmPassword: '',
       acceptTerms: false
     })
+    errors.value = {}
     
     // Redirecionar após um delay
     setTimeout(() => {
       router.push('/login')
     }, 3000)
     
-  } catch (error) {
-    // Erro já é tratado no store
-    console.error('Erro no cadastro:', error)
+  } catch (err: any) {
+    error.value = err.message || 'Erro ao criar conta'
+    successMessage.value = ''
+  } finally {
+    loading.value = false
   }
 }
 </script>
-
