@@ -5,13 +5,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest",
-    "test:ui": "vitest --ui"
+    "preview": "vite preview --port 4173",
+    "start": "vite preview --port 4173 --strictPort"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
     "@vue/runtime-core": "^3.4.0",
+    "lucide-vue-next": "^0.546.0",
     "pinia": "^3.0.3",
     "vue": "^3.4.0",
     "vue-router": "^4.6.3"
