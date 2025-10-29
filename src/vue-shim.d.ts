@@ -13,3 +13,11 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+// Vue Router Types - estender RouteMeta
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    requireAdmin?: boolean
+  }
+}
+

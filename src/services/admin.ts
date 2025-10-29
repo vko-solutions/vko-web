@@ -2,17 +2,32 @@ import { supabase } from '@/lib/supabase'
 
 export async function listProfiles() {
   try {
+    console.log('listProfiles: Iniciando busca de perfis...')
+    
+    // Primeiro, verificar se o usuário atual é admin (para debug)
+    const { data: currentUser } = await supabase.auth.getUser()
+    console.log('listProfiles: Usuário atual:', currentUser.user?.id, currentUser.user?.email)
+    
     const { data, error } = await supabase.from('users_profile')
       .select('id, name, email, role, company_id')
       .order('email')
     
     if (error) {
-      console.error('Erro ao listar perfis:', error)
+      console.error('listProfiles: Erro ao listar perfis:', error.code, error.message, error.details)
+      
+      // Se for erro 42501 (permissão negada), é problema de RLS
+      if (error.code === '42501') {
+        throw new Error(`Permissão negada. Verifique se você está logado como administrador. Erro: ${error.message}`)
+      }
+      
       throw new Error(`Erro ao carregar usuários: ${error.message}`)
     }
     
+    console.log('listProfiles: Perfis encontrados:', data?.length || 0)
+    console.log('listProfiles: IDs dos perfis:', data?.map(u => ({ id: u.id, email: u.email, role: u.role })) || [])
+    
     return data || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro no serviço listProfiles:', error)
     throw error
   }
@@ -156,6 +171,52 @@ export async function adminRemoveUserAsset(userId: string, assetId: string) {
     }
   } catch (error) {
     console.error('Erro no serviço adminRemoveUserAsset:', error)
+    throw error
+  }
+}
+
+/**
+ * Criar perfil para um usuário que existe no Auth mas não tem perfil
+ * Útil quando usuário foi criado diretamente no Supabase Auth
+ */
+export async function createMissingProfile(userId: string, email: string, name?: string, role: 'admin'|'partner_manager'|'asset_governance' = 'asset_governance') {
+  try {
+    if (!userId || !email) {
+      throw new Error('ID do usuário e email são obrigatórios')
+    }
+    
+    // Verificar se perfil já existe
+    const { data: existing } = await supabase
+      .from('users_profile')
+      .select('id')
+      .eq('id', userId)
+      .single()
+    
+    if (existing) {
+      return { alreadyExists: true, profile: existing }
+    }
+    
+    // Criar perfil
+    const { data, error } = await supabase
+      .from('users_profile')
+      .insert({
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0],
+        role: role,
+        company_id: null
+      })
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Erro ao criar perfil:', error)
+      throw new Error(`Erro ao criar perfil: ${error.message}`)
+    }
+    
+    return { alreadyExists: false, profile: data }
+  } catch (error: any) {
+    console.error('Erro no serviço createMissingProfile:', error)
     throw error
   }
 }

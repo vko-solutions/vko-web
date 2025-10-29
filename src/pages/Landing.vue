@@ -38,7 +38,7 @@
             </button>
             <button 
               @click="handleCadastro"
-              class="px-4 py-2 text-sm font-medium text-white bg-[#7AC29A] rounded-lg hover:bg-[#6ba889] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
+              class="px-4 py-2 text-sm font-medium text-white bg-[#2B4C7E] rounded-lg hover:bg-[#1e3556] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Cadastro
             </button>
@@ -66,7 +66,7 @@
               </div>
               
               <!-- Elementos Decorativos -->
-              <div class="absolute -top-4 -right-4 w-8 h-8 bg-[#7AC29A] rounded-full opacity-80 animate-pulse"></div>
+              <div class="absolute -top-4 -right-4 w-8 h-8 bg-[#5B8CBE] rounded-full opacity-80 animate-pulse"></div>
               <div class="absolute -bottom-4 -left-4 w-6 h-6 bg-[#A7C7E7] rounded-full opacity-60 animate-pulse" style="animation-delay: 1s;"></div>
             </div>
           </div>
@@ -79,11 +79,11 @@
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#2B4C7E] leading-tight mb-4">
                   Da engenharia à
                   <br class="hidden sm:block">
-                  <span class="text-[#7AC29A]">inovação habitacional</span>
+                  <span class="text-[#5B8CBE]">inovação habitacional</span>
                 </h1>
                 
                 <!-- Linha decorativa -->
-                <div class="w-24 h-1 bg-gradient-to-r from-[#2B4C7E] to-[#7AC29A] mx-auto rounded-full"></div>
+                <div class="w-24 h-1 bg-gradient-to-r from-[#2B4C7E] to-[#A7C7E7] mx-auto rounded-full"></div>
               </div>
               
               <!-- Texto de Apresentação -->
@@ -108,8 +108,8 @@
                       <span class="text-sm font-medium text-[#2B4C7E]">Eficiência</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                      <div class="w-3 h-3 bg-[#7AC29A] rounded-full"></div>
-                      <span class="text-sm font-medium text-[#7AC29A]">Otimização</span>
+                      <div class="w-3 h-3 bg-[#5B8CBE] rounded-full"></div>
+                      <span class="text-sm font-medium text-[#5B8CBE]">Otimização</span>
                     </div>
                     <div class="flex items-center space-x-2">
                       <div class="w-3 h-3 bg-[#A7C7E7] rounded-full"></div>
@@ -126,7 +126,7 @@
         <div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
           <!-- Círculos Flutuantes -->
           <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-[#A7C7E7]/10 rounded-full blur-xl animate-pulse"></div>
-          <div class="absolute top-3/4 right-1/4 w-24 h-24 bg-[#7AC29A]/10 rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
+          <div class="absolute top-3/4 right-1/4 w-24 h-24 bg-[#5B8CBE]/10 rounded-full blur-xl animate-pulse" style="animation-delay: 2s;"></div>
           <div class="absolute bottom-1/4 left-1/3 w-20 h-20 bg-[#2B4C7E]/5 rounded-full blur-xl animate-pulse" style="animation-delay: 4s;"></div>
           
           <!-- Linhas Decorativas -->
@@ -135,7 +135,7 @@
           
           <!-- Elementos Geométricos -->
           <div class="absolute top-1/3 right-1/3 w-16 h-16 border border-[#2B4C7E]/20 rotate-45 animate-spin" style="animation-duration: 20s;"></div>
-          <div class="absolute bottom-1/3 left-1/4 w-12 h-12 border border-[#7AC29A]/20 rotate-12 animate-pulse"></div>
+          <div class="absolute bottom-1/3 left-1/4 w-12 h-12 border border-[#5B8CBE]/20 rotate-12 animate-pulse"></div>
         </div>
         
         <!-- Call to Action -->

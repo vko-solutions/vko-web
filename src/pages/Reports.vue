@@ -94,13 +94,43 @@
             <span class="font-medium">{{ report.uploaded_by || 'N/A' }}</span>
           </div>
           <div class="pt-3 border-t border-gray-200">
+            <!-- Mostrar botão apenas se tem acesso (se veio do SELECT, tem acesso) -->
             <a
+              v-if="report.signedUrl"
               :href="report.signedUrl"
               target="_blank"
-              class="inline-flex items-center px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors duration-200"
+              download
+              class="inline-flex items-center px-4 py-2 bg-[#2B4C7E] text-white rounded-lg hover:bg-[#1e3556] transition-colors duration-200"
             >
-              📄 Abrir Relatório
+              📄 Baixar Relatório
             </a>
+            <div
+              v-else
+              class="space-y-1"
+            >
+              <!-- Relatório de teste (sem arquivo físico) -->
+              <span
+                v-if="report.file_path?.startsWith('test/')"
+                class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm"
+              >
+                🧪 Relatório de teste (sem arquivo)
+              </span>
+              <!-- Erro de acesso real -->
+              <template v-else>
+                <span class="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 rounded-lg cursor-not-allowed text-sm">
+                  ⚠️ Sem acesso ao arquivo
+                </span>
+                <p class="text-xs text-gray-500">
+                  Você pode ver este relatório, mas não tem permissão para baixar o arquivo. 
+                  <span v-if="auth.profile?.role !== 'admin'">
+                    Contate o administrador para liberar acesso a este ativo.
+                  </span>
+                  <span v-else>
+                    Verifique as políticas do Storage ou se o arquivo existe.
+                  </span>
+                </p>
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -146,9 +176,18 @@ const loadReports = async () => {
           try {
             const signedUrl = await getSignedUrl(report.file_path)
             return { ...report, signedUrl }
-          } catch (error) {
-            console.error('Erro ao gerar URL assinada:', error)
-            return { ...report, signedUrl: null }
+          } catch (error: any) {
+            // Não logar erro para relatórios de teste (esperado)
+            const isTestReport = report.file_path?.startsWith('test/')
+            if (!isTestReport) {
+              console.error(`Erro ao gerar URL assinada para ${report.title} (${report.file_path}):`, error)
+            }
+            return { 
+              ...report, 
+              signedUrl: null,
+              accessError: error?.message || 'Erro desconhecido ao gerar URL',
+              isTestReport: isTestReport
+            }
           }
         })
       )
@@ -163,9 +202,18 @@ const loadReports = async () => {
               try {
                 const signedUrl = await getSignedUrl(report.file_path)
                 return { ...report, signedUrl }
-              } catch (error) {
-                console.error('Erro ao gerar URL assinada:', error)
-                return { ...report, signedUrl: null }
+              } catch (error: any) {
+                // Não logar erro para relatórios de teste (esperado)
+                const isTestReport = report.file_path?.startsWith('test/')
+                if (!isTestReport) {
+                  console.error(`Erro ao gerar URL assinada para ${report.title} (${report.file_path}):`, error)
+                }
+                return { 
+                  ...report, 
+                  signedUrl: null,
+                  accessError: error?.message || 'Erro desconhecido ao gerar URL',
+                  isTestReport: isTestReport
+                }
               }
             })
           )

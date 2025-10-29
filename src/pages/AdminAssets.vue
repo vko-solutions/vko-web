@@ -32,6 +32,7 @@ const deleting = ref<string | null>(null)
 const search = ref('')
 const page = ref(1)
 const pageSize = ref(10)
+const successMessage = ref('')
 
 const assets = ref<Asset[]>([])
 const total = ref(0)
@@ -59,16 +60,30 @@ const pagedAssets = computed(() => {
 async function fetchAssets() {
   loading.value = true
   try {
+    console.log('fetchAssets: Carregando ativos...')
     // Admin vê todos; Partner também (por RLS); Governance só o que tiver ACL
     const { data, error, count } = await supabase
       .from('assets')
       .select('id, name, code, company_id', { count: 'exact' })
       .order('name', { ascending: true })
-    if (error) throw error
-    assets.value = data as Asset[]
+      
+    if (error) {
+      console.error('Erro na query:', error)
+      throw error
+    }
+    
+    console.log('fetchAssets: Ativos carregados:', data?.length || 0)
+    assets.value = data as Asset[] || []
     total.value = count ?? data?.length ?? 0
+    
+    // Carregar ACL dos primeiros itens
+    const itemsToLoad = assets.value.slice(0, pageSize.value)
+    for (const a of itemsToLoad) {
+      await refreshAcl(a.id)
+    }
   } catch (e: any) {
     console.error('Erro ao carregar assets:', e?.message || e)
+    alert(`Erro ao carregar ativos: ${e?.message}`)
   } finally {
     loading.value = false
   }
@@ -109,6 +124,14 @@ function isRoleAllowed(assetId: string, role: 'governance' | 'partner_manager') 
 
 async function toggleRole(assetId: string, role: 'governance' | 'partner_manager', canRead: boolean) {
   try {
+    // Otimistic update - mudar UI imediatamente
+    const currentAcl = aclByAsset.value[assetId] || []
+    const updatedAcl = canRead 
+      ? [...currentAcl, { asset_id: assetId, subject_type: 'role' as const, subject_id: role, can_read: true }]
+      : currentAcl.filter(r => !(r.subject_type === 'role' && r.subject_id === role))
+    
+    aclByAsset.value = { ...aclByAsset.value, [assetId]: updatedAcl }
+    
     const { error } = await supabase.rpc('set_asset_access', {
       p_asset_id: assetId,
       p_subject_type: 'role',
@@ -117,12 +140,17 @@ async function toggleRole(assetId: string, role: 'governance' | 'partner_manager
     })
     
     if (error) {
-      alert(`Erro ao atualizar ACL: ${error.message}`)
+      // Rollback se falhar
+      await refreshAcl(assetId)
+      alert(`Erro ao atualizar permissão: ${error.message}`)
     } else {
+      // Atualizar com dados reais do servidor
       await refreshAcl(assetId)
     }
   } catch (e: any) {
-    alert(`Erro: ${e?.message || 'Falha ao atualizar ACL'}`)
+    // Rollback em caso de erro
+    await refreshAcl(assetId)
+    alert(`Erro: ${e?.message || 'Falha ao atualizar permissão'}`)
   }
 }
 
@@ -132,32 +160,80 @@ async function createAsset() {
     return
   }
   
+  // Validar se não está criando duplicado (check básico)
+  const trimmedName = name.value.trim()
+  const existingAsset = assets.value.find(a => 
+    a.name?.toLowerCase() === trimmedName.toLowerCase()
+  )
+  
+  if (existingAsset) {
+    const confirm = window.confirm(
+      `Já existe um ativo com o nome "${trimmedName}". Deseja criar mesmo assim?`
+    )
+    if (!confirm) {
+      return
+    }
+  }
+  
   creating.value = true
   try {
+    const assetId = crypto.randomUUID()
     const payload: Partial<Asset> = { 
-      name: name.value.trim(),
+      name: trimmedName
     }
     
     if (code.value.trim()) payload.code = code.value.trim()
-    if (companyId.value.trim()) payload.company_id = companyId.value.trim()
+    if (companyId.value.trim()) {
+      // Validar UUID se fornecido
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (!uuidRegex.test(companyId.value.trim())) {
+        throw new Error('Company ID deve ser um UUID válido')
+      }
+      payload.company_id = companyId.value.trim()
+    }
 
     const { data, error } = await supabase
       .from('assets')
-      .insert({ id: crypto.randomUUID(), ...payload })
+      .insert({ id: assetId, ...payload })
       .select('id, name, code, company_id')
       .single()
       
-    if (error) throw error
+    if (error) {
+      console.error('Erro ao criar ativo:', error)
+      
+      // Mensagens mais descritivas
+      let message = `Erro ao criar ativo: ${error.message}`
+      if (error.code === '23505') {
+        message = `Já existe um ativo com este nome ou código. Por favor, escolha outro nome.`
+      } else if (error.code === '23503') {
+        message = `Company ID não encontrado. Verifique se a empresa existe.`
+      } else if (error.code === '42501') {
+        message = `Você não tem permissão para criar ativos.`
+      }
+      
+      throw new Error(message)
+    }
 
+    console.log('Ativo criado com sucesso:', data)
+    
     // Limpar formulário
     name.value = ''
     code.value = ''
     companyId.value = ''
     
-    // Adicionar à lista e recarregar ACL
-    assets.value = [data as Asset, ...assets.value]
-    await refreshAcl((data as Asset).id)
+    // Recarregar a lista completa de ativos
+    await fetchAssets()
+    
+    // Recarregar ACL do novo ativo
+    await refreshAcl(assetId)
+    
+    // Mensagem de sucesso
+    successMessage.value = `Ativo "${payload.name}" criado com sucesso!`
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
   } catch (e: any) {
+    console.error('Erro ao criar ativo:', e)
     alert(e?.message || 'Falha ao criar ativo')
   } finally {
     creating.value = false
@@ -188,10 +264,7 @@ async function deleteAssetRow(assetId: string) {
 
 onMounted(async () => {
   await fetchAssets()
-  // Carrega ACL das linhas paginadas inicialmente
-  for (const a of assets.value.slice(0, pageSize.value)) {
-    await refreshAcl(a.id)
-  }
+  // O fetchAssets já carrega ACL automaticamente
 })
 </script>
 
@@ -207,6 +280,16 @@ onMounted(async () => {
         <span v-else>Itens: <b>{{ total }}</b></span>
       </div>
     </header>
+
+    <!-- Mensagem de sucesso -->
+    <div v-if="successMessage" class="rounded-lg bg-green-50 border border-green-200 p-4">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-medium text-green-800">{{ successMessage }}</p>
+      </div>
+    </div>
 
     <!-- Form de criação -->
     <section class="rounded-2xl border border-gray-200 p-4 bg-white shadow-sm">
@@ -376,3 +459,4 @@ onMounted(async () => {
 <style scoped>
 /* Estilização mínima. O restante fica por conta do Tailwind. */
 </style>
+
